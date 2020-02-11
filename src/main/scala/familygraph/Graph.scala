@@ -1,6 +1,6 @@
 package familygraph
 
-import zio.{RIO, ZIO}
+import zio.ZIO
 
 trait Graph {
   val graph: Graph.Service[Any]
@@ -8,12 +8,12 @@ trait Graph {
 
 object Graph {
   trait Service[R] {
-    def getById(id: Long): RIO[R, Person]
-    def add(p: Person): RIO[R, Unit]
+    def getById(id: Long): ZIO[R, GraphException, Person]
+    def add(p: Person): ZIO[R, GraphException, Unit]
   }
 
   object > extends Service[Graph] {
-    def getById(id: Long): RIO[Graph, Person] = ZIO.accessM(_.graph.getById(id))
-    def add(p: Person): RIO[Graph, Unit]      = ZIO.accessM(_.graph.add(p))
+    def getById(id: Long): ZIO[Graph, GraphException, Person] = ZIO.accessM(_.graph.getById(id))
+    def add(p: Person): ZIO[Graph, GraphException, Unit]      = ZIO.accessM(_.graph.add(p))
   }
 }

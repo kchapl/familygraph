@@ -15,27 +15,38 @@ trait GraphLive extends Graph {
 
   val graph: Service[Any] = new Service[Any] {
 
-    private val session: TaskManaged[Session[Task]] =
+    private val session: Managed[SessionException, Session[Task]] =
       for {
-        config   <- ZManaged.fromEffect(config.load)
-        userName <- ZManaged.succeed(config.userName)
-        password <- ZManaged.succeed(config.password)
+        config   <- Managed.fromEffect(config.load).mapError(SessionException)
+        userName <- Managed.succeed(config.userName)
+        password <- Managed.succeed(config.password)
         token = AuthTokens.basic(userName, password)
-        driver  <- GraphDatabase.driver[Task]("bolt://localhost:7687", token)
-        session <- driver.session
+        driver <- GraphDatabase
+          .driver[Task]("bolt://localhost:7687", token)
+          .mapError(SessionException)
+        session <- driver.session.mapError(SessionException)
       } yield session
 
-    def getById(id: Long): Task[Person] =
-      session.use { s =>
-        s"MATCH (p:Person) WHERE p.id = ${id.toString} RETURN p LIMIT 1".query[Person].single(s)
-      }
+    def getById(id: Long): IO[GraphException, Person] =
+      session
+        .use { s =>
+          s"MATCH (p:Person) WHERE p.id = ${id.toString} RETURN p LIMIT 1"
+            .query[Person]
+            .single(s)
+            .mapError(NodeMatchException)
+        }
 
-    def add(p: Person): Task[Unit] = session.use { s =>
-      "CREATE (n:Person {id: $id,  name: $name, born: $born})"
-        .query[Unit]
-        .withParams(
-          Map("id" -> QueryParam(p.id), "name" -> QueryParam(p.name), "born" -> QueryParam(p.born)))
-        .execute(s)
-    }
+    def add(p: Person): IO[GraphException, Unit] =
+      session
+        .use { s =>
+          "CREATE (n:Person {id: $id,  name: $name, born: $born})"
+            .query[Unit]
+            .withParams(
+              Map("id"   -> QueryParam(p.id),
+                  "name" -> QueryParam(p.name),
+                  "born" -> QueryParam(p.born)))
+            .execute(s)
+            .mapError(NodeCreateException)
+        }
   }
 }
