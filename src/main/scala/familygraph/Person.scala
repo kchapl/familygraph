@@ -1,3 +1,3 @@
 package familygraph
 
-case class Person(id: Long, born: Int, name: String)
+case class Person(name: String, born: Int)

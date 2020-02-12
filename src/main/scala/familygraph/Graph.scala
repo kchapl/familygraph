@@ -8,12 +8,16 @@ trait Graph {
 
 object Graph {
   trait Service[R] {
-    def getById(id: Long): ZIO[R, GraphException, Person]
+    def getByName(name: String): ZIO[R, GraphException, Person]
     def add(p: Person): ZIO[R, GraphException, Unit]
+    def addChildRelation(parent: Person, child: Person): ZIO[R, GraphException, Unit]
   }
 
   object > extends Service[Graph] {
-    def getById(id: Long): ZIO[Graph, GraphException, Person] = ZIO.accessM(_.graph.getById(id))
-    def add(p: Person): ZIO[Graph, GraphException, Unit]      = ZIO.accessM(_.graph.add(p))
+    def getByName(name: String): ZIO[Graph, GraphException, Person] =
+      ZIO.accessM(_.graph.getByName(name))
+    def add(p: Person): ZIO[Graph, GraphException, Unit] = ZIO.accessM(_.graph.add(p))
+    def addChildRelation(parent: Person, child: Person): ZIO[Graph, GraphException, Unit] =
+      ZIO.accessM(_.graph.addChildRelation(parent, child))
   }
 }

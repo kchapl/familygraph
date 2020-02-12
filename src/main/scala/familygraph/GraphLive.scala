@@ -27,26 +27,54 @@ trait GraphLive extends Graph {
         session <- driver.session.mapError(SessionException)
       } yield session
 
-    def getById(id: Long): IO[GraphException, Person] =
-      session
-        .use { s =>
-          s"MATCH (p:Person) WHERE p.id = ${id.toString} RETURN p LIMIT 1"
-            .query[Person]
-            .single(s)
-            .mapError(NodeMatchException)
-        }
+    def getByName(name: String): IO[GraphException, Person] =
+      session.use { s =>
+        Query.getByName
+          .query[Person]
+          .withParams(Map("name" -> QueryParam(name)))
+          .single(s)
+          .mapError(NodeMatchException)
+      }
+
+    private def create(q: String, params: Map[String, QueryParam]): IO[GraphException, Unit] =
+      session.use { s =>
+        q.query[Unit]
+          .withParams(params)
+          .execute(s)
+          .mapError(NodeCreateException)
+      }
 
     def add(p: Person): IO[GraphException, Unit] =
-      session
-        .use { s =>
-          "CREATE (n:Person {id: $id,  name: $name, born: $born})"
-            .query[Unit]
-            .withParams(
-              Map("id"   -> QueryParam(p.id),
-                  "name" -> QueryParam(p.name),
-                  "born" -> QueryParam(p.born)))
-            .execute(s)
-            .mapError(NodeCreateException)
-        }
+      create(
+        Query.createPerson,
+        Map("name" -> QueryParam(p.name), "born" -> QueryParam(p.born))
+      )
+
+    def addChildRelation(parent: Person, child: Person): ZIO[Any, GraphException, Unit] =
+      create(
+        Query.createChildRelation,
+        Map("parentName" -> QueryParam(parent.name), "childName" -> QueryParam(child.name))
+      )
+  }
+
+  object Query {
+
+//    val getByName: String =
+//      """MATCH (p:Person)
+//        |WHERE p.name = $name
+//        |RETURN p""".stripMargin
+    val getByName: String =
+      """MATCH (p:Person)
+        |WHERE p.name = $name
+        |RETURN p
+        |LIMIT 1""".stripMargin
+
+    val createPerson: String = "CREATE (n:Person {name: $name, born: $born})"
+
+    val createChildRelation: String =
+      """MATCH (parent:Person), (child:Person)
+        |WHERE parent.name = $parentName
+        |AND child.name = $childName
+        |CREATE (child)-[r:CHILD_OF]->(parent)""".stripMargin
   }
 }

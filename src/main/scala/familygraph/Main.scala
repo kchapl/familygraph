@@ -7,11 +7,17 @@ object Main extends App {
 
   val program: RIO[Console with Graph, Unit] =
     for {
-      _      <- console.putStrLn("here")
-      name   <- console.getStrLn
-      _      <- Graph.>.add(Person(1, 1969, name))
-      person <- Graph.>.getById(1)
-      _      <- console.putStrLn(person.toString)
+      _          <- console.putStrLn("P")
+      parentName <- console.getStrLn
+      _          <- Graph.>.add(Person(parentName, 1969))
+      parent     <- Graph.>.getByName(parentName)
+      _          <- console.putStrLn(parent.toString)
+      _          <- console.putStrLn("C")
+      childName  <- console.getStrLn
+      _          <- Graph.>.add(Person(childName, 2007))
+      child      <- Graph.>.getByName(childName)
+      _          <- console.putStrLn(child.toString)
+      _          <- Graph.>.addChildRelation(parent, child)
     } yield ()
 
   def run(args: List[String]): ZIO[ZEnv, Nothing, Int] =
