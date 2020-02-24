@@ -8,18 +8,19 @@ object Main extends zio.App {
   val program: RIO[Console with Graph, Unit] =
     for {
       _               <- console.putStrLn("P")
-      parentName      <- console.getStrLn
-      parentBirthYear <- console.getStrLn
-      _               <- Graph.>.add(Person(parentName, parentBirthYear.toInt))
-      parent          <- Graph.>.getByName(parentName)
-      _               <- console.putStrLn(parent.toString)
+      fatherName      <- console.getStrLn
+      fatherBirthYear <- console.getStrLn
+      _               <- Graph.>.add(Person(fatherName, fatherBirthYear.toInt))
+      father          <- Graph.>.getByName(fatherName)
+      _               <- console.putStrLn(father.toString)
       _               <- console.putStrLn("C")
       childName       <- console.getStrLn
       childBirthYear  <- console.getStrLn
       _               <- Graph.>.add(Person(childName, childBirthYear.toInt))
       child           <- Graph.>.getByName(childName)
       _               <- console.putStrLn(child.toString)
-      _               <- Graph.>.addChildRelation(parent, child)
+      _               <- Graph.>.addChildRelation(father, child)
+      _               <- Graph.>.addFatherRelation(child, father)
     } yield ()
 
   def run(args: List[String]): ZIO[ZEnv, Nothing, Int] =

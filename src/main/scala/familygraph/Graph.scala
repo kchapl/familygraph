@@ -11,6 +11,7 @@ object Graph {
     def getByName(name: String): ZIO[R, GraphException, Person]
     def add(p: Person): ZIO[R, GraphException, Unit]
     def addChildRelation(parent: Person, child: Person): ZIO[R, GraphException, Unit]
+    def addFatherRelation(child: Person, father: Person): ZIO[R, GraphException, Unit]
   }
 
   object > extends Service[Graph] {
@@ -19,5 +20,7 @@ object Graph {
     def add(p: Person): ZIO[Graph, GraphException, Unit] = ZIO.accessM(_.graph.add(p))
     def addChildRelation(parent: Person, child: Person): ZIO[Graph, GraphException, Unit] =
       ZIO.accessM(_.graph.addChildRelation(parent, child))
+    def addFatherRelation(child: Person, father: Person): ZIO[Graph, GraphException, Unit] =
+      ZIO.accessM(_.graph.addFatherRelation(child, father))
   }
 }
