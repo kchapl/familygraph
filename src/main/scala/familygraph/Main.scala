@@ -5,22 +5,24 @@ import zio.{RIO, ZEnv, ZIO, console}
 
 object Main extends zio.App {
 
+  def getPerson(prompt: String): RIO[Console with Graph, Person] =
+    for {
+      _         <- console.putStrLn(prompt)
+      name      <- console.getStrLn
+      birthYear <- console.getStrLn
+      _         <- Graph.>.add(Person(name, birthYear.toInt))
+      person    <- Graph.>.getByName(name)
+      _         <- console.putStrLn(person.toString)
+    } yield person
+
   val program: RIO[Console with Graph, Unit] =
     for {
-      _               <- console.putStrLn("P")
-      fatherName      <- console.getStrLn
-      fatherBirthYear <- console.getStrLn
-      _               <- Graph.>.add(Person(fatherName, fatherBirthYear.toInt))
-      father          <- Graph.>.getByName(fatherName)
-      _               <- console.putStrLn(father.toString)
-      _               <- console.putStrLn("C")
-      childName       <- console.getStrLn
-      childBirthYear  <- console.getStrLn
-      _               <- Graph.>.add(Person(childName, childBirthYear.toInt))
-      child           <- Graph.>.getByName(childName)
-      _               <- console.putStrLn(child.toString)
-      _               <- Graph.>.addChildRelation(father, child)
-      _               <- Graph.>.addFatherRelation(child, father)
+      father <- getPerson("F")
+      mother <- getPerson("M")
+      child  <- getPerson("C")
+      _      <- Graph.>.addChildRelation(father, child)
+      _      <- Graph.>.addFatherRelation(child, father)
+      _      <- Graph.>.addMotherRelation(child, mother)
     } yield ()
 
   def run(args: List[String]): ZIO[ZEnv, Nothing, Int] =

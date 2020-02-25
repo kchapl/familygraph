@@ -53,13 +53,28 @@ trait GraphLive extends Graph {
     def addChildRelation(parent: Person, child: Person): IO[GraphException, Unit] =
       create(
         Query.createChildRelation,
-        Map("parentName" -> QueryParam(parent.name), "childName" -> QueryParam(child.name))
+        Map(
+          "parentName" -> QueryParam(parent.name),
+          "childName"  -> QueryParam(child.name)
+        )
       )
 
     def addFatherRelation(child: Person, father: Person): IO[GraphException, Unit] =
       create(
         Query.createFatherRelation,
-        Map("childName" -> QueryParam(child.name), "fatherName" -> QueryParam(father.name))
+        Map(
+          "childName"  -> QueryParam(child.name),
+          "fatherName" -> QueryParam(father.name)
+        )
+      )
+
+    def addMotherRelation(child: Person, mother: Person): IO[GraphException, Unit] =
+      create(
+        Query.createMotherRelation,
+        Map(
+          "childName"  -> QueryParam(child.name),
+          "motherName" -> QueryParam(mother.name)
+        )
       )
   }
 
@@ -70,23 +85,22 @@ trait GraphLive extends Graph {
 //        |WHERE p.name = $name
 //        |RETURN p""".stripMargin
     val getByName: String =
-      """MATCH (p:Person)
-        |WHERE p.name = $name
+      """MATCH (p:Person { name: $name })
         |RETURN p
         |LIMIT 1""".stripMargin
 
-    val createPerson: String = "CREATE (n:Person {name: $name, born: $born})"
+    val createPerson: String = "CREATE (n:Person { name: $name, born: $born })"
 
     val createChildRelation: String =
-      """MATCH (parent:Person), (child:Person)
-        |WHERE parent.name = $parentName
-        |AND child.name = $childName
+      """MATCH (parent:Person { name: $parentName }), (child:Person { name: $childName })
         |CREATE (child)-[r:CHILD_OF]->(parent)""".stripMargin
 
     val createFatherRelation: String =
-      """MATCH (child:Person), (father:Person)
-        |WHERE child.name = $childName
-        |AND father.name = $fatherName
+      """MATCH (child:Person { name: $childName }), (father:Person { name: $fatherName })
         |CREATE (father)-[r:FATHER_OF]->(child)""".stripMargin
+
+    val createMotherRelation: String =
+      """MATCH (child:Person { name: $childName }), (mother:Person { name: $motherName })
+        |CREATE (mother)-[r:MOTHER_OF]->(child)""".stripMargin
   }
 }
