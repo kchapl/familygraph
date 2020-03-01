@@ -59,7 +59,7 @@ trait GraphLive extends Graph {
         )
       )
 
-    def addFatherRelation(child: Person, father: Person): IO[GraphException, Unit] =
+    private def addFatherRelation(child: Person, father: Person): IO[GraphException, Unit] =
       create(
         Query.createFatherRelation,
         Map(
@@ -67,6 +67,12 @@ trait GraphLive extends Graph {
           "fatherName" -> QueryParam(father.name)
         )
       )
+
+    def addFatherChildRelation(father: Person, child: Person): ZIO[Any, GraphException, Unit] =
+      for {
+        _ <- addChildRelation(father, child)
+        _ <- addFatherRelation(child, father)
+      } yield ()
 
     def addMotherRelation(child: Person, mother: Person): IO[GraphException, Unit] =
       create(
@@ -80,14 +86,9 @@ trait GraphLive extends Graph {
 
   object Query {
 
-//    val getByName: String =
-//      """MATCH (p:Person)
-//        |WHERE p.name = $name
-//        |RETURN p""".stripMargin
     val getByName: String =
       """MATCH (p:Person { name: $name })
-        |RETURN p
-        |LIMIT 1""".stripMargin
+        |RETURN p""".stripMargin
 
     val createPerson: String = "CREATE (n:Person { name: $name, born: $born })"
 

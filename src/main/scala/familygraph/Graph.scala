@@ -11,7 +11,7 @@ object Graph {
     def getByName(name: String): ZIO[R, GraphException, Person]
     def add(p: Person): ZIO[R, GraphException, Unit]
     def addChildRelation(parent: Person, child: Person): ZIO[R, GraphException, Unit]
-    def addFatherRelation(child: Person, father: Person): ZIO[R, GraphException, Unit]
+    def addFatherChildRelation(father: Person, child: Person): ZIO[R, GraphException, Unit]
     def addMotherRelation(child: Person, mother: Person): ZIO[R, GraphException, Unit]
   }
 
@@ -21,8 +21,8 @@ object Graph {
     def add(p: Person): ZIO[Graph, GraphException, Unit] = ZIO.accessM(_.graph.add(p))
     def addChildRelation(parent: Person, child: Person): ZIO[Graph, GraphException, Unit] =
       ZIO.accessM(_.graph.addChildRelation(parent, child))
-    def addFatherRelation(child: Person, father: Person): ZIO[Graph, GraphException, Unit] =
-      ZIO.accessM(_.graph.addFatherRelation(child, father))
+    def addFatherChildRelation(father: Person, child: Person): ZIO[Graph, GraphException, Unit] =
+      ZIO.accessM(_.graph.addFatherChildRelation(father, child))
     def addMotherRelation(child: Person, mother: Person): ZIO[Graph, GraphException, Unit] =
       ZIO.accessM(_.graph.addMotherRelation(child, mother))
   }
