@@ -23,6 +23,14 @@ object Main extends zio.App {
       person <- Graph.>.getByName(name)
     } yield person
 
+  private val addMotherChildRelation: RIO[Console with Graph, Unit] =
+    for {
+      mother <- getPerson("Mother's name:")
+      child  <- getPerson("Child's name:")
+      _      <- Graph.>.addMotherChildRelation(mother, child)
+      _      <- console.putStrLn(s"Added mother-child relation")
+    } yield ()
+
   private val addFatherChildRelation: RIO[Console with Graph, Unit] =
     for {
       father <- getPerson("Father's name:")
@@ -39,7 +47,7 @@ object Main extends zio.App {
         option <- console.getStrLn
         _ <- option match {
           case "1" => addPerson *> go()
-          case "2" => console.putStrLn("Option " + option) *> go()
+          case "2" => addMotherChildRelation *> go()
           case "3" => addFatherChildRelation *> go()
           case "4" => ZIO.succeed(())
         }
