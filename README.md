@@ -1,0 +1,2 @@
+# familygraph
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7079894ddb83423fa965b35b338cf298)](https://app.codacy.com/manual/kchapl/familygraph?utm_source=github.com&utm_medium=referral&utm_content=kchapl/familygraph&utm_campaign=Badge_Grade_Settings)
