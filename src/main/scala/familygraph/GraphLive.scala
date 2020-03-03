@@ -27,7 +27,7 @@ trait GraphLive extends Graph {
         session <- driver.session.mapError(SessionException)
       } yield session
 
-    def getByName(name: String): IO[GraphException, Person] =
+    def fetchByName(name: String): IO[GraphException, Person] =
       session.use { s =>
         Query.getByName
           .query[Person]

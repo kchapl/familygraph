@@ -12,29 +12,29 @@ object Main extends zio.App {
       _         <- console.putStrLn("Year of birth:")
       birthYear <- console.getStrLn
       _         <- Graph.>.add(Person(name, birthYear.toInt))
-      person    <- Graph.>.getByName(name)
+      person    <- Graph.>.fetchByName(name)
       _         <- console.putStrLn(s"Added ${person.toString}")
     } yield ()
 
-  private def getPerson(prompt: String): RIO[Console with Graph, Person] =
+  private def person(prompt: String): RIO[Console with Graph, Person] =
     for {
       _      <- console.putStrLn(prompt)
       name   <- console.getStrLn
-      person <- Graph.>.getByName(name)
+      person <- Graph.>.fetchByName(name)
     } yield person
 
   private val addMotherChildRelation: RIO[Console with Graph, Unit] =
     for {
-      mother <- getPerson("Mother's name:")
-      child  <- getPerson("Child's name:")
+      mother <- person("Mother's name:")
+      child  <- person("Child's name:")
       _      <- Graph.>.addMotherChildRelation(mother, child)
       _      <- console.putStrLn(s"Added mother-child relation")
     } yield ()
 
   private val addFatherChildRelation: RIO[Console with Graph, Unit] =
     for {
-      father <- getPerson("Father's name:")
-      child  <- getPerson("Child's name:")
+      father <- person("Father's name:")
+      child  <- person("Child's name:")
       _      <- Graph.>.addFatherChildRelation(father, child)
       _      <- console.putStrLn(s"Added father-child relation")
     } yield ()
